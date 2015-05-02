@@ -1,0 +1,79 @@
+<html>
+<head>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.3.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<style>
+	body {
+		margin-top: 50px;
+		text-align:center;
+	}
+	</style>
+</head>
+<body>
+<input type="text" name="bookName"/> <br/> <p><a href="javascript:refreshCovers(-8)">show previous</a> | <a href="javascript:refreshCovers(8)">load more</a></p><br/>
+
+<img id="0" width="150px"/>
+<img id="1" width="150px"/>
+<img id="2" width="150px"/>
+<img id="3" width="150px"/><br/>
+<img id="4" width="150px"/>
+<img id="5" width="150px"/>
+<img id="6" width="150px"/>
+<img id="7" width="150px"/>
+
+<script>
+
+var lastQueriedName;
+var currentSearchPosition = 0;
+
+$("input").on("change keyup paste", function() {
+	refreshCovers(0);
+});
+
+function refreshCovers(shift) {
+	var bookName = $("input").val();
+	if (bookName !== "") {
+		bookName = bookName.replace(" ", "%20");
+		queryGoogleForPictures(bookName, calculateStartPosition(bookName, shift));
+	}
+}
+
+function calculateStartPosition(bookName, shift) {
+	if (lastQueriedName === bookName) {
+		currentSearchPosition += shift;
+		if (currentSearchPosition < 0) {
+			currentSearchPosition = 0;
+		}
+	} else {
+		lastQueriedName = bookName;
+		currentSearchPosition = 0;
+	}
+	return currentSearchPosition;
+}
+
+function queryGoogleForPictures(bookName, position) {
+	$.ajax({
+		url: 'https://ajax.googleapis.com/ajax/services/search/images',
+		dataType: "jsonp",
+		data: {
+			v: "1.0",
+			rsz: 8,
+			hl: "pl",
+			start: position,
+			q: bookName
+		},
+		success: function(response) {
+			if (response.responseData === null) {
+				alert('Sorry no more results!');
+			} else {
+				for (i = 0; i <= 8; i++) {
+					$("#"+i).attr("src", response.responseData.results[i].unescapedUrl);
+				}
+			}
+		}
+	});
+}
+
+</script>
+</body>
+</html>
